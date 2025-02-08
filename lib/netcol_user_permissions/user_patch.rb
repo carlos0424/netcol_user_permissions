@@ -1,37 +1,29 @@
+# Módulo NetcolUserPermissions: Extiende la funcionalidad de los usuarios en Redmine
 module NetcolUserPermissions
   module UserPatch
     def self.included(base)
       base.class_eval do
-        attr_accessor :session_data  # Define session_data como un atributo virtual
-
-        # Guardar valores en la sesión al iniciar sesión
-        after_save :update_netcol_permissions
-
-        def update_netcol_permissions
-          if User.current == self
-            self.session_data ||= {}  # Inicializa session_data si es nil
-            self.session_data[:netcol_permissions] = {
-              can_export_reports: custom_field_value(28).to_s.match(/SI/i).present?,
-              can_view_values: custom_field_value(34).to_s.match(/SI/i).present?
-            }
-          end
-        end
-
-        # Métodos de ayuda para consultar permisos
+        
+        # Método para verificar si un usuario tiene permiso para exportar reportes.
+        # Se obtiene el valor del campo personalizado con ID 28 y se verifica si es "SI".
         def can_export_reports?
-          session_data&.dig(:netcol_permissions, :can_export_reports) || false
+          export_permission_cf = CustomField.find_by(id: 28) # Buscar el campo personalizado
+          export_permission_cf ? custom_field_value(28).to_s.match(/SI/i).present? : false
         end
 
+        # Método para verificar si un usuario tiene permiso para ver valores específicos.
+        # Se obtiene el valor del campo personalizado con ID 34 y se verifica si es "SI".
         def can_view_values?
-          session_data&.dig(:netcol_permissions, :can_view_values) || false
+          view_permission_cf = CustomField.find_by(id: 34) # Buscar el campo personalizado
+          view_permission_cf ? custom_field_value(34).to_s.match(/SI/i).present? : false
         end
       end
     end
   end
 end
 
-# Extender la clase User
+# Extiende la clase User con el nuevo módulo de permisos.
+# Esto asegura que todos los usuarios en Redmine tengan acceso a estos métodos.
 Rails.configuration.to_prepare do
   User.include(NetcolUserPermissions::UserPatch)
 end
-
