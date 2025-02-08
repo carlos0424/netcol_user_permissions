@@ -7,7 +7,7 @@ module NetcolUserPermissions
       export_permission = user.can_export_reports?
       view_values_permission = user.can_view_values?
 
-      # Inyectar código JavaScript para ocultar los botones si el usuario no tiene permisos
+      # Inyectar código JavaScript para ocultar todo el bloque si el usuario no tiene permiso
       <<-JAVASCRIPT
         <script>
           document.addEventListener("DOMContentLoaded", function() {
@@ -17,14 +17,12 @@ module NetcolUserPermissions
             console.log("Permiso de exportación:", canExportReports);
             console.log("Permiso de ver valores:", canViewValues);
 
-            // Si el usuario NO tiene permiso, ocultar los botones de exportación
+            // Si el usuario NO tiene permiso, ocultar TODO el bloque de exportación
             if (!canExportReports) {
-              document.querySelectorAll('a.xls, a.xlse').forEach(el => {
-                if (el.closest('span')) {
-                  el.closest('span').style.display = 'none'; // Ocultar
-                }
-                console.log("Ocultando botón de exportación:", el);
+              document.querySelectorAll('.other-formats').forEach(el => {
+                el.style.display = 'none'; // Oculta título y botones
               });
+              console.log("Bloque de exportación ocultado");
             }
           });
         </script>
